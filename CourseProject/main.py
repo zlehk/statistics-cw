@@ -63,8 +63,15 @@ def process_freqs():
     for sht_data in data['sht_data']:
         sht_number = sht_data[0]
         signal_numbers = sht_data[1]
+
         sht_file_name = 'sht' + str(sht_number) + '.SHT'
         sht_abs_path = SHT_DIR + sht_file_name
+
+        if not os.path.isfile(sht_abs_path):
+            print('WARNING: unable process file\n' +
+                  sht_abs_path)
+            continue
+
         freqs = []
         sawtooth_signals_numbers = []
 
@@ -80,9 +87,9 @@ def process_freqs():
                 freqs.append(freq)
                 pyplot.plot(freq[0], freq[1], '-o', markersize=3)
             else:
-                print('WARNING: unable to detect sawtooth sequence of minimum length for data:\n' +
+                print('WARNING: unable to detect sawtooth sequence of minimum length for data\n' +
                       sht_file_name + '\n'
-                      'processing signal number: ' +
+                      'processing signal number ' +
                       str(signal_number))
 
         l_border_t, r_border_t, b_border_f, u_border_f = get_borders(freqs)
