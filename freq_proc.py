@@ -3,7 +3,9 @@ from CourseProject.raw import get_raw_data
 from CourseProject.processing import process_freqs
 from CourseProject.signal_info import SIGNAL_NUMBERS
 import argparse
-from pylatex import Document, Section, Subsection, Package, Command, Figure
+from argparse import SUPPRESS
+from pylatex import Document, Section, Subsection, Package, Command, Figure, SubFigure
+from pylatex.utils import NoEscape
 
 WORK_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -57,14 +59,27 @@ def gen_latex(sht_names, output_path, mode):
     with doc.create(Section('Результаты')):
         for sht_name in sht_names:
             with doc.create(Subsection(sht_name)):
-                if mode == 'raw' or mode == 'both':
+                if mode == 'raw':
                     with doc.create(Figure(position='h!')) as raw_pic:
                         raw_pic.add_image(os.path.join(output_path, 'raw_' + sht_name + '.png'), width='250px')
                         raw_pic.add_caption('Сырые данные с показаний датчиков, ' + sht_name)
-                if mode == 'freqs' or mode == 'both':
+                elif mode == 'freqs':
                     with doc.create(Figure(position='h!')) as freqs_pic:
                         freqs_pic.add_image(os.path.join(output_path, sht_name + '.png'), width='250px')
                         freqs_pic.add_caption('Частотный портрет для отобранных сигналов, ' + sht_name)
+                else:
+                    with doc.create(Figure(position='h!')) as pic:
+                        with doc.create(SubFigure(position='b',
+                                                  width=NoEscape(r'0.45\linewidth'))) as small_raw_pic:
+                            small_raw_pic.add_image(os.path.join(output_path, 'raw_' + sht_name + '.png'),
+                                                    width=NoEscape(r'\linewidth'))
+                        with doc.create(SubFigure(position='b',
+                                                  width=NoEscape(r'0.45\linewidth'))) as small_freqs__pic:
+                            small_freqs__pic.add_image(os.path.join(output_path, sht_name + '.png'),
+                                                       width=NoEscape(r'\linewidth'))
+                    pic.add_caption(
+                        'Сырые данные с показаний датчиков (cлева), ' +
+                        'Частотный портрет для отобранных сигналов (справа), ' + sht_name)
 
     doc.packages.append(Package('babel',
                                 options=['russian']))
@@ -76,7 +91,7 @@ def gen_latex(sht_names, output_path, mode):
 
 
 def check_args():
-    parser = argparse.ArgumentParser(description='SHT data processing')
+    parser = argparse.ArgumentParser(description='SHT data processing', usage=SUPPRESS)
 
     parser.add_argument('--input', '-i', action='store', default=WORK_DIR + '\\SHT\\', type=str,
                         help='Directory with SHT files')
